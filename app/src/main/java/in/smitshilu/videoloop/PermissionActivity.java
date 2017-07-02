@@ -5,10 +5,12 @@ import android.content.Intent;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 public class PermissionActivity extends AppCompatActivity {
 
+    private static String TAG = "PermissionActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,7 +26,9 @@ public class PermissionActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (grantResults[0] == 0)
             startActivity(new Intent(this, FullscreenActivity.class));
-        else
+        else {
+            Log.e(TAG, "No Permission");
             Toast.makeText(getApplicationContext(), "Permission not granted", Toast.LENGTH_LONG).show();
+        }
     }
 }

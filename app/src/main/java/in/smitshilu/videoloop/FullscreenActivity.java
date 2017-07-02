@@ -38,37 +38,46 @@ import java.util.TimeZone;
  */
 public class FullscreenActivity extends AppCompatActivity {
 
+    private static String TAG = "FullscreenActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Ask for permissino if not granted
+        // Ask for permission if not granted
         if (checkPermission()) {
             Intent intent = new Intent(this, PermissionActivity.class);
             startActivity(intent);
         }
 
         setContentView(R.layout.activity_fullscreen);
+
+        // Declaring final as we will use it in OnCompleteListener()
         final VideoView videoView = (VideoView) findViewById(R.id.videoView);
         String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/video.mp4";
-        videoView.setVideoPath(path);
-        videoView.setMediaController(new MediaController(this));
-        videoView.start();
+        // Check if video.mp4 is available or not?
+        if(new File(path).exists()) {
+            videoView.setVideoPath(path);
+            videoView.setMediaController(new MediaController(this));
+            videoView.start();
 
-        // Repeat video again after completion
-        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                try {
-                    Toast.makeText(getApplicationContext(), getTime(), Toast.LENGTH_LONG).show();
-                    videoView.start();
-                } catch (Exception e) {
-                    Toast.makeText(getApplicationContext(), "Sorry couldn't play it again", Toast.LENGTH_LONG).show();
-                    Log.e("Play Again", "Error: " + e);
+            // Repeat video again after completion
+            videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    try {
+                        Toast.makeText(getApplicationContext(), getTime(), Toast.LENGTH_LONG).show();
+                        videoView.start();
+                    } catch (Exception e) {
+                        Toast.makeText(getApplicationContext(), "Sorry couldn't play it again", Toast.LENGTH_LONG).show();
+                        Log.e(TAG, "Error: " + e);
+                    }
                 }
-            }
-        });
-
+            });
+        } else {
+            Toast.makeText(getApplicationContext(), "File(video.mp4) not available", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "File(video.mp4) not available");
+        }
     }
 
     // Check for storage access permission
@@ -95,6 +104,7 @@ public class FullscreenActivity extends AppCompatActivity {
                         BufferedReader br = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
                         String temp = "";
                         while ((temp = br.readLine()) != null) {
+                            // Selecting UTC time only
                             if(temp.contains("UTC")) {
                                 time.append(temp.substring(temp.indexOf(',')+2, temp.indexOf(',')+14));
                             }
@@ -102,7 +112,7 @@ public class FullscreenActivity extends AppCompatActivity {
                     }
                 }
                 catch (Exception e) {
-                    Log.e("connection", "Error: " + e);
+                    Log.e(TAG, "Error: " + e);
                     Toast.makeText(getApplicationContext(), "Error fetching time", Toast.LENGTH_LONG).show();
                 }
             }
@@ -111,7 +121,7 @@ public class FullscreenActivity extends AppCompatActivity {
         try {
             t.join();
         } catch (Exception e) {
-            Log.e("thread", "Error: " + e);
+            Log.e(TAG, "Error: " + e);
             Toast.makeText(getApplicationContext(), "Error Joining Thread", Toast.LENGTH_LONG).show();
         }
         return time.toString().trim();
